@@ -1,0 +1,53 @@
+stages:
+  - build
+  - deploy
+
+before_script:
+  - go version
+  - go mod download
+
+build-cli:
+  stage: build
+  artifacts:
+    paths:
+      - ./dist
+  before_script:
+    - mkdir -p ./dist/btcli
+  script:
+    - make clean && make docs && make
+    - mv ./btcli ./dist/btcli
+  tags:
+    - go-runner
+  only:
+    - develop
+    - master
+
+deploy-develop:
+  stage: deploy
+  dependencies:
+    - build-cli
+  script:
+    - cp config.toml ./dist/btcli/config.toml
+    - tree ./dist
+    - ssh deploy-server-8.145 "rm -rf /root/apps/btcli/* && mkdir -p /root/btcli/"
+    - scp -r ./dist/* deploy-server-8.145:/root/apps/btcli/
+    - ssh -t deploy-server-8.145 < ./deploy-develop.sh
+  tags:
+    - go-runner
+  only:
+    - develop
+
+deploy-release:
+  stage: deploy
+  dependencies:
+    - build-cli
+  script:
+    - cp config.toml ./dist/btcli/config.toml
+    - tree ./dist
+    - ssh release-server-8.146 "rm -rf /root/apps/btcli/* && mkdir -p /root/apps/btcli/"
+    - scp -r ./dist/* release-server-8.146:/root/apps/btcli/
+  #    - ssh -t release-server-8.146 < ./deploy-develop.sh
+  tags:
+    - go-runner
+  only:
+    - master

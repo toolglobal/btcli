@@ -1,0 +1,330 @@
+basePath: /
+definitions:
+  main.BalanceResult:
+    properties:
+      balance:
+        type: string
+    type: object
+  main.BuildOLOTxReq:
+    properties:
+      priKey:
+        type: string
+      to:
+        type: string
+      value:
+        type: string
+    type: object
+  main.BuildTokenBatchTransferTxReq:
+    properties:
+      priKey:
+        type: string
+      token:
+        type: string
+      tos:
+        items:
+          type: string
+        type: array
+      value:
+        type: string
+    type: object
+  main.BuildTokenBatchTransfersTxReq:
+    properties:
+      priKey:
+        type: string
+      token:
+        type: string
+      tos:
+        items:
+          $ref: '#/definitions/main.To'
+        type: array
+    type: object
+  main.BuildTokenTxReq:
+    properties:
+      priKey:
+        type: string
+      to:
+        type: string
+      token:
+        type: string
+      value:
+        type: string
+    type: object
+  main.BuildTxResult:
+    properties:
+      hash:
+        type: string
+      signedEvmTx:
+        type: string
+    type: object
+  main.GenKeyResult:
+    properties:
+      address:
+        type: string
+      priKey:
+        type: string
+      pubKey:
+        type: string
+    type: object
+  main.SignedEvmTx:
+    properties:
+      body:
+        properties:
+          load:
+            description: hex编码
+            type: string
+          memo:
+            description: 备注
+            type: string
+          to:
+            description: 合约地址
+            type: string
+          value:
+            type: string
+        type: object
+      createdAt:
+        description: 时间戳unixNano
+        type: integer
+      gasLimit:
+        type: integer
+      gasPrice:
+        type: string
+      mode:
+        description: 模式:0-default/commit 1-async 2-sync
+        type: integer
+      nonce:
+        type: integer
+      sender:
+        description: pubkey
+        type: string
+      signature:
+        description: hex编码
+        type: string
+    type: object
+  main.To:
+    properties:
+      to:
+        type: string
+      value:
+        type: string
+    type: object
+host: 127.0.0.1:8001
+info:
+  contact: {}
+  description: BT资产化相关API
+  license: {}
+  title: BT CLI
+  version: 1.0.0
+paths:
+  /v1/buildolotx:
+    post:
+      consumes:
+      - application/json
+      description: 生成OLO转账交易
+      parameters:
+      - description: 请求参数
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/main.BuildOLOTxReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/main.BuildTxResult'
+      summary: 生成OLO转账交易
+      tags:
+      - v1
+  /v1/buildtokenbatchtx:
+    post:
+      consumes:
+      - application/json
+      description: 生成代币批量转账交易，转账金额相同
+      parameters:
+      - description: 请求参数
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/main.BuildTokenBatchTransferTxReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/main.BuildTxResult'
+      summary: 生成代币批量转账交易
+      tags:
+      - v1
+  /v1/buildtokenbatchtxs:
+    post:
+      consumes:
+      - application/json
+      description: 生成代币批量转账交易，转账金额不同
+      parameters:
+      - description: 请求参数
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/main.BuildTokenBatchTransfersTxReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/main.BuildTxResult'
+      summary: 生成代币批量转账交易
+      tags:
+      - v1
+  /v1/buildtokentx:
+    post:
+      consumes:
+      - application/json
+      description: 生成代币转账交易
+      parameters:
+      - description: 请求参数
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/main.BuildTokenTxReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/main.BuildTxResult'
+      summary: 生成代币转账交易
+      tags:
+      - v1
+  /v1/checktx:
+    get:
+      consumes:
+      - application/json
+      description: 检测交易是否成功上链
+      parameters:
+      - description: 交易hash
+        in: query
+        name: hash
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            type: boolean
+      summary: 检测交易是否成功上链
+      tags:
+      - v1
+  /v1/genkey:
+    get:
+      consumes:
+      - application/json
+      description: 生成mondo账户，该账户默认未上链，需要通过转账交易激活
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/main.GenKeyResult'
+      summary: 生成账户
+      tags:
+      - v1
+  /v1/olobalance:
+    get:
+      consumes:
+      - application/json
+      description: 查询地址OLO余额，如果地址不存在，返回余额为0
+      parameters:
+      - description: 地址
+        in: query
+        name: address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/main.BalanceResult'
+      summary: 查询地址OLO余额
+      tags:
+      - v1
+  /v1/sendtx:
+    post:
+      consumes:
+      - application/json
+      description: 发送交易
+      parameters:
+      - description: 请求参数
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/main.SignedEvmTx'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+      summary: 发送交易
+      tags:
+      - v1
+  /v1/tokenbalance:
+    get:
+      consumes:
+      - application/json
+      description: 查询地址代币余额
+      parameters:
+      - description: 地址
+        in: query
+        name: address
+        required: true
+        type: string
+      - description: 代币合约地址
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/main.BalanceResult'
+      summary: 查询地址代币余额
+      tags:
+      - v1
+  /v1/validaddress:
+    get:
+      consumes:
+      - application/json
+      description: 校验地址是否合法
+      parameters:
+      - description: 地址
+        in: query
+        name: address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            type: boolean
+      summary: 校验地址是否合法
+      tags:
+      - v1
+swagger: "2.0"
